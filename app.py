@@ -1,17 +1,62 @@
 from flask import Flask,request,redirect,jsonify,abort, flash, url_for
-from model import Photos, setup_app
+# from model import Photos, setup_app
 from flask_migrate import Migrate
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
 
+db = SQLAlchemy()
+
+class Photos(db.Model):
+    __tablename__ = 'photos'
+
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String , nullable=False)
+    url = db.Column(db.String, nullable=False);
+
+    def __init__(self, label, url):
+        self.label = label
+        self.url = url
+
+    def insert(self):
+        db.session.add(self)
+        db.session.commit()
+
+        
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def format(self):
+        return {
+            'id': self.id,
+            'label': self.label,
+            'url': self.url
+        }
+
+class Admin(db.Model):
+    __tablename__ = 'admin'
+    id = db.Column(db.Integer, primary_key=True)
+    password = db.Column(db.String , nullable=False)
 
 def get_formatted(photos):
     formatted = [photo.format() for photo in photos]
     return formatted
 
-#
-
 app = Flask(__name__)
-setup_app(app)
+dbname = 'unsplash';
+
+
+
+migrate = Migrate(app)
+app.config["SQLALCHEMY_DATABASE_URI"] =DATABASE_URL =  'postgresql://postgres:19alema@localhost:5432/'+ dbname;
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db.init_app(app)
+db.app = app
+
+
+
+db.drop_all()
+db.create_all()
     
 CORS(app)
 
