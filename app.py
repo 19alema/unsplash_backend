@@ -1,5 +1,5 @@
 from flask import Flask,request,redirect,jsonify,abort, flash, url_for
-from model import Photos, setup_app, Admin
+from model import Photos, setup_app
 from flask_migrate import Migrate
 from flask_cors import CORS
 
@@ -8,23 +8,23 @@ def get_formatted(photos):
     formatted = [photo.format() for photo in photos]
     return formatted
 
+#
 
-def create_app(test_config=None):
-    app = Flask(__name__)
-    setup_app(app)
+app = Flask(__name__)
+setup_app(app)
     
-    CORS(app)
+CORS(app)
 
-    @app.after_request
-    def after_request(response):
+@app.after_request
+def after_request(response):
         response.headers.add( "Access-Control-Allow-Headers", "Content-Type,Authorization,true")
         response.headers.add( "Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
         response.headers.add(  "Access-Control-Allow-Origin", "*")
         return response
 
 
-    @app.route('/', methods=['GET'])
-    def photos():
+@app.route('/', methods=['GET'])
+def photos():
         all_photos = Photos.query.order_by(Photos.id.desc()).all()
         # sorted_photos = sorted(all_photos, reverse=True)
        
@@ -35,8 +35,8 @@ def create_app(test_config=None):
         })
 
 # POSTING PHOTO 
-    @app.route('/photos', methods=['GET','POST'])
-    def add_photo():
+@app.route('/photos', methods=['GET','POST'])
+def add_photo():
         if request.method == 'POST':
             body = request.get_json()
             label = body.get('label', None)
@@ -64,8 +64,8 @@ def create_app(test_config=None):
 
 
 # DELETE A PHOTO
-    @app.route('/photos/<photo_id>', methods=['DELETE', 'GET'])
-    def delete_photo(photo_id):
+@app.route('/photos/<photo_id>', methods=['DELETE', 'GET'])
+def delete_photo(photo_id):
         to_delete = Photos.query.filter(Photos.id == photo_id).one_or_none()
 
         if to_delete:
@@ -79,8 +79,8 @@ def create_app(test_config=None):
             'photos': format_photos
         })
 
-    @app.route('/search', methods=['GET', 'POST'])
-    def search_photo():
+@app.route('/search', methods=['GET', 'POST'])
+def search_photo():
         body = request.get_json()
         search_term = body.get('search_term', None)
         try:
@@ -98,27 +98,26 @@ def create_app(test_config=None):
 
 
 # ERROR handling
-    @app.errorhandler(404)
-    def not_found():
+@app.errorhandler(404)
+def not_found():
             return jsonify({
                 'status': False,
                 'error': 404,
                 'messsage': 'Resourcses Not Found'
             })
-    @app.errorhandler(422)
-    def Unprocessible():
+@app.errorhandler(422)
+def Unprocessible():
             return jsonify({
                 'status': False,
                 'error': 422,
                 'messsage': 'Unprocessible'
             })
 
-    @app.errorhandler(405)
-    def method_not_allowed():
+@app.errorhandler(405)
+def method_not_allowed():
             return jsonify({
                 'status': False,
                 'error': 405,
                 'messsage': 'Method not allowed'
             })
 
-    return app

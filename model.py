@@ -1,8 +1,8 @@
 from flask import Flask;
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-import sqlalchemy as sa
 
+# app = Flask(__name__)   
 dbname = 'unsplash';
 DATABASE_URL =  'postgresql://postgres:19alema@localhost:5432/'+ dbname;
 
@@ -15,18 +15,10 @@ def setup_app(app, database_path = DATABASE_URL):
     db.app = app
     db.init_app(app)
 
-    engine = sa.create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    inspector = sa.inspect(engine)
 
-    if not inspector.has_table("users"):
-        with app.app_context():
-            db.drop_all()
-            db.create_all()
-            app.logger.info('Initialized the database!')
-    else:
-        app.logger.info('Database already contains the users table.')
-
-
+    db.drop_all()
+    db.create_all()
+  
 
 
 
@@ -58,7 +50,6 @@ class Photos(db.Model):
             'label': self.label,
             'url': self.url
         }
-
 
 class Admin(db.Model):
     __tablename__ = 'admin'
